@@ -9,39 +9,45 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-const colors=[
-    new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-    new THREE.MeshBasicMaterial( { color: 0xff00ff } ),
-    new THREE.MeshBasicMaterial( { color: 0xffaa00 } ),
-    new THREE.MeshBasicMaterial( { color: 0xaaaaaa } ),
-    new THREE.MeshBasicMaterial( { color: 0xffff00 } ),
-    new THREE.MeshBasicMaterial( { color: 0x00ff00 } )
-]
 
-let snake_head = [0,0,0]
+const loader = new THREE.TextureLoader()
+
+const letters_texture = {}
+"абвгдеёжзиклмнопрстуфхцчшщъыьэюя".split("").forEach((l)=>letters_texture[l] = 
+    new THREE.MeshBasicMaterial( { color: 0xffffff, map: loader.load('letters/'+l+'.png', (a)=>console.log("Texture '"+l+"' is ready"))} ))
 
 document.addEventListener('keydown', (e) => e.key=='q'? chosenSnake = (chosenSnake+1)%3:0);
-let chosenSnake = 1;
 
-function draw_cube(x,y,z,c){
-    const cube = new THREE.Mesh( geometry, colors[c] )
-    cube.position.x = x-snake_head[0];
-    cube.position.y = y-snake_head[1];
-    cube.position.z = z-snake_head[2];
+function draw_letter(letter, x,y,z){
+    const cube = new THREE.Mesh( geometry, letters_texture[letter])
+    cube.position.x = x;
+    cube.position.y = y;
+    cube.position.z = z;
     scene.add(cube)
 }
 
-function displayGS(gs){
-    if (!gs['tower']){
-        for (let i = 0; i<gs['tower']['words'].length(); i++){
-            gs['tower']['words'][i]
-            draw_cube
-        }
+function draw_word(word, x, y, z, dir){
+    let letters = word.split("");
+    for (let i=0; i<letters.length; i++){
+        draw_letter(letters[i], x, y, z);
+        x+=(dir == 1); z+=(dir == 2); y-=(dir == 3);
     }
+}
+
+function displayGS(gs){
+    //draw_letter('а', 0, 0, 0)
+    // if (!gs['tower']){
+    //     for (let i = 0; i<gs['tower']['words'].length(); i++){
+    //         gs['tower']['words'][i]
+    //         draw_cube
+    //     }
+    // }
 }
 
 
 async function getState(){
+    return {}
+
     const token = ''
     const server_url = 'https://games.datsteam.dev/play/snake3d'
     
@@ -64,9 +70,9 @@ async function getState(){
 let t = 0;
 function animate() {
 	renderer.render( scene, camera );
-    if (t>1000){
+    if (t>100){
         getState()
-                .then(data => data.json())
+                //.then(data => data)
                 .then(response =>{
                     displayGS(response)
 
@@ -79,9 +85,11 @@ function animate() {
     t++;
 }
 
+draw_word('онанист', 0, 0, 0, 1)
+
 //camera.rotation.x = 1.5
-camera.position.y = 160;
-camera.position.z = 300;
+camera.position.y = 20;
+camera.position.z = 30;
 
 const controls = new OrbitControls (camera, renderer.domElement);
 controls.target.set( 0, 0, 0 )
