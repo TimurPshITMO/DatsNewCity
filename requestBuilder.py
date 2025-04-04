@@ -8,25 +8,7 @@ load_dotenv()
 token = os.getenv('TOKEN')
 
 # URL сервера
-server_url = 'https://google.com'
-
-# API-метод
-api = ''
-url = f"{server_url}{api}"
-
-# Данные для отправки
-baseReq = {
-  "snakes": [
-    {
-      "id": "351aadb036bdd706dc4aea62482059291d4e8a52",
-      "direction": [
-        1,
-        0,
-        0
-      ]
-    }
-  ]
-}
+server_url = 'https://games-test.datsteam.dev'
 
 # Заголовки запроса
 headers = {
@@ -34,11 +16,14 @@ headers = {
         'Content-Type': 'application/json'
     }
 
-def sendCommand(data = baseReq):
+def sendCommand(data):
+    if isinstance(data, str):
+        api = f'/api/{data}'
+        url = f"{server_url}{api}"
+        response = requests.get(url, headers=headers)
+        return response.json()
     # Выполнение POST-запроса
     response = requests.post(url, headers=headers, json=data)
-    with open('responses/response.txt', 'w') as f:
-        f.write(response.text)
     return response.json()
 
-print(sendCommand())
+print(sendCommand('rounds'))
