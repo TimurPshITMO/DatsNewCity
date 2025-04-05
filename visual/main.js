@@ -26,7 +26,7 @@ function draw_letter(letter, x,y,z){
     scene.add(cube)
 }
 
-function draw_word(word, x, y, z, dir){
+function draw_word_with_args(word, x, y, z, dir){
     let letters = word.split("");
     for (let i=0; i<letters.length; i++){
         draw_letter(letters[i], x, y, z);
@@ -34,37 +34,45 @@ function draw_word(word, x, y, z, dir){
     }
 }
 
+function draw_word(word){
+    let letters = word["text"].split("");
+    let x = word["pos"][0]; let y = word["pos"][1]; let z = word["pos"][2]
+    for (let i=0; i<letters.length; i++){
+        draw_letter(letters[i], x, z, y);
+        x+=(word["dir"] == 2); y+=(word["dir"] == 3); z-=(word["dir"] == 1);
+    }
+}
+
 function displayGS(gs){
-    //draw_letter('а', 0, 0, 0)
-    // if (!gs['tower']){
-    //     for (let i = 0; i<gs['tower']['words'].length(); i++){
-    //         gs['tower']['words'][i]
-    //         draw_cube
-    //     }
-    // }
+    if (gs['tower']){
+        for (let i = 0; i<gs['tower']['words'].length; i++){
+            draw_word(gs['tower']['words'][i])
+        }
+    }
 }
 
 
 async function getState(){
-    return {}
+    return fetch('data.json')
+    return fetch('key.txt').then(res=>res.text().then((key)=>{
+        const token = key
+        const server_url = 'https://games.datsteam.dev/play/snake3d'
+        
+        const api = '/player/towers'
+        const url = `${server_url}${api}`
+        
+        const headers = {
+            'X-Auth-Token': token,
+            'Content-Type': 'application/json'
+        }
 
-    const token = ''
-    const server_url = 'https://games.datsteam.dev/play/snake3d'
-    
-    const api = '/player/move'
-    const url = `${server_url}${api}`
-    
-    const headers = {
-        'X-Auth-Token': token,
-        'Content-Type': 'application/json'
-    }
-
-    const payload = {
-        headers,
-        method: "GET",
-    };
-    
-    return fetch(url, payload)
+        const payload = {
+            headers,
+            method: "GET",
+        };
+        
+        return fetch(url, payload)
+    })).catch(e=>console.error(e))
 }
 
 let t = 0;
@@ -72,12 +80,11 @@ function animate() {
 	renderer.render( scene, camera );
     if (t>100){
         getState()
-                //.then(data => data)
+                .then(data => data.json())
                 .then(response =>{
                     displayGS(response)
-
                 })
-                .catch(error => console.log(error));
+                .catch(error => console.error(error));
                 t = 0
                 
     }
@@ -85,7 +92,9 @@ function animate() {
     t++;
 }
 
-draw_word('онанист', 0, 0, 0, 1)
+draw_word_with_args('онанист', 5, 5, 5, 1)
+draw_word_with_args('орангутан', 5, 5, 5, 2)
+
 
 //camera.rotation.x = 1.5
 camera.position.y = 20;
